@@ -1,0 +1,17 @@
+data:
+  train_csv: ../Dry_Bean_Dataset_Dirty_train.csv
+  val_split: 0.2
+
+model:
+  name: RandomForest
+  params:
+    n_estimators: 50
+    random_state: 42
+
+feature:
+  poly_degree: 1
+  var_thresh: 0.0
+  model_select: false
+
+out_dir: experiments/run1
+random_state: 42

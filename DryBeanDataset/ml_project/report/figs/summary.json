@@ -1,0 +1,42 @@
+{
+  "n_samples": 9527,
+  "n_features": 16,
+  "columns": [
+    "Area",
+    "Perimeter",
+    "MajorAxisLength",
+    "MinorAxisLength",
+    "AspectRation",
+    "Eccentricity",
+    "ConvexArea",
+    "EquivDiameter",
+    "Extent",
+    "Solidity",
+    "roundness",
+    "Compactness",
+    "ShapeFactor1",
+    "ShapeFactor2",
+    "ShapeFactor3",
+    "ShapeFactor4",
+    "Class"
+  ],
+  "missing_per_col": {
+    "Area": 0,
+    "Perimeter": 469,
+    "MajorAxisLength": 0,
+    "MinorAxisLength": 0,
+    "AspectRation": 0,
+    "Eccentricity": 0,
+    "ConvexArea": 0,
+    "EquivDiameter": 0,
+    "Extent": 0,
+    "Solidity": 272,
+    "roundness": 0,
+    "Compactness": 0,
+    "ShapeFactor1": 0,
+    "ShapeFactor2": 0,
+    "ShapeFactor3": 0,
+    "ShapeFactor4": 0,
+    "Class": 0
+  }
+}

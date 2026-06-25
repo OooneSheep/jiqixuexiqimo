@@ -1,0 +1,20 @@
+{
+  "train_rows_raw": 9527,
+  "val_rows_raw": 1347,
+  "test_rows_raw": 2737,
+  "train_rows_clean": 9506,
+  "feature_count": 16,
+  "class_count": 7,
+  "duplicate_rows_removed": 21,
+  "missing_cells_raw_train": 741,
+  "invalid_numeric_cells_train": 460,
+  "class_distribution_train": {
+    "DERMASON": 2503,
+    "SIRA": 1837,
+    "SEKER": 1408,
+    "HOROZ": 1319,
+    "CALI": 1151,
+    "BARBUNYA": 927,
+    "BOMBAY": 361
+  }
+}
