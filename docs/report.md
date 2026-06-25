@@ -127,23 +127,7 @@ python -m src.run_experiments --data-dir .. --out experiments/full_run --site-di
 
 ```text
 DryBeanDataset/ml_project/docs/index.html
-```
-
-GitHub Pages 链接格式：
-
 ```text
-https://<你的用户名>.github.io/<仓库名>/
-```
-
-上传到 GitHub 后，在仓库 Settings -> Pages 中选择 `docs/` 目录即可生成正式网页链接。
-
-建议论文截图包含：
-
-- 展示页首页统计卡片和数据分析图。
-- 多算法精度表。
-- Loss 曲线对比图。
-- 鲁棒性曲线图。
-- 混淆矩阵图。
 
 ## 5. 课程总结
 
@@ -159,4 +143,4 @@ https://<你的用户名>.github.io/<仓库名>/
 
 ## 6. 结论
 
-本项目完成了期末考核要求的全流程机器学习工程。实验结果显示，在当前数据处理方案下，MLP 以 0.9266 的测试集准确率和 0.9352 的 Macro-F1 取得最佳综合表现，同时推理速度最快、过拟合差距最小。RandomForest 和 XGBoost 表现接近，但训练集准确率过高，存在更明显过拟合。通过补充多图表、两类噪声鲁棒性实验、混淆矩阵和 GitHub Pages 展示页面，项目也具备一定加分项基础。
+本项目完成了期末考核要求的全流程机器学习工程。实验结果显示，在当前数据处理方案下，MLP 以 0.9266 的测试集准确率和 0.9352 的 Macro-F1 取得最佳综合表现，同时推理速度最快、过拟合差距最小。RandomForest 和 XGBoost 表现接近，但训练集准确率过高，存在更明显过拟合。
