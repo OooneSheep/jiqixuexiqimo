@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dry Bean 多分类机器学习工程展示</title>
+  <style>
+    :root {
+      --ink: #162033;
+      --muted: #5b677a;
+      --line: #d8dee9;
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --blue: #2563eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.65;
+    }
+    header { background: #ffffff; border-bottom: 1px solid var(--line); }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px; }
+    h1 { margin: 0 0 8px; font-size: clamp(28px, 4vw, 48px); }
+    h2 { margin: 42px 0 14px; font-size: 26px; }
+    h3 { margin: 22px 0 10px; font-size: 18px; }
+    p { margin: 0 0 12px; color: var(--muted); }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .metric {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .metric strong { display: block; font-size: 24px; color: var(--blue); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 16px;
+    }
+    figure {
+      margin: 0;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+    }
+    figure img { width: 100%; display: block; border-radius: 4px; }
+    figcaption { padding: 8px 4px 2px; color: var(--muted); font-size: 14px; }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: 14px;
+      margin: 12px 0 18px;
+    }
+    .data-table th, .data-table td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+    }
+    .data-table th { background: #eef3fb; }
+    code { background: #e8edf6; padding: 2px 5px; border-radius: 4px; }
+    ul { padding-left: 20px; }
+    li { margin-bottom: 6px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Dry Bean Dataset 多分类机器学习工程</h1>
+      <p>覆盖数据分析、数据清洗、特征工程、多算法实验、鲁棒性评估、系统展示和课程总结。</p>
+      <div class="metrics">
+        <div class="metric"><strong>9506</strong>清洗后训练样本</div>
+        <div class="metric"><strong>16</strong>数值形态特征</div>
+        <div class="metric"><strong>7</strong>干豆类别</div>
+        <div class="metric"><strong>MLP</strong>测试集最优模型：0.9266</div>
+      </div>
+    </div>
+  </header>
+  <main class="wrap">
+    <section>
+      <h2>数据描述与污染观察</h2>
+      <p>数据由干豆图像提取的几何与形态学特征组成，目标是预测 <code>Class</code> 中的干豆品种。训练集中发现的主要问题包括重复行、缺失值、数值列中的非法字符、类别标签格式不统一，以及强相关特征带来的冗余。</p>
+      <div class="grid">
+        <figure><img src="assets/class_distribution.png" alt="类别分布"><figcaption>类别分布：可观察类别不完全均衡，模型评价需要同时看宏平均 F1。</figcaption></figure>
+        <figure><img src="assets/missing_values.png" alt="缺失值"><figcaption>缺失/非法数值统计：指导后续中位数填充和类型转换。</figcaption></figure>
+        <figure><img src="assets/correlation_heatmap.png" alt="相关性热力图"><figcaption>相关性热力图：面积、周长、轴长等特征存在明显相关。</figcaption></figure>
+        <figure><img src="assets/pca2d.png" alt="PCA"><figcaption>PCA 二维投影：部分类别边界重叠，说明任务不是简单线性可分。</figcaption></figure>
+      </div>
+    </section>
+    <section>
+      <h2>数据处理与特征工程</h2>
+      <ul>
+        <li>列名标准化，所有数值特征统一转为浮点数，逗号和非法字符通过强制类型转换识别。</li>
+        <li>删除重复样本，降低训练集泄漏和重复记忆风险。</li>
+        <li>数值缺失值使用训练数据中位数填充，避免均值受异常值拉偏。</li>
+        <li>类别标签去除非字母字符并转为大写，保证训练、测试标签编码一致。</li>
+        <li>所有模型输入使用 <code>StandardScaler</code> 标准化，保证 MLP 与 XGBoost/随机森林处在统一评估流程下。</li>
+      </ul>
+    </section>
+    <section>
+      <h2>多算法实验结果</h2>
+      <table class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>model</th>
+      <th>acc_train</th>
+      <th>acc_test</th>
+      <th>overfit_gap</th>
+      <th>infer_ms_per_sample</th>
+      <th>macro_f1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>RandomForest</td>
+      <td>1.0000</td>
+      <td>0.9236</td>
+      <td>0.0764</td>
+      <td>0.0358</td>
+      <td>0.9330</td>
+    </tr>
+    <tr>
+      <td>MLP</td>
+      <td>0.9458</td>
+      <td>0.9266</td>
+      <td>0.0193</td>
+      <td>0.0016</td>
+      <td>0.9352</td>
+    </tr>
+    <tr>
+      <td>XGBoost</td>
+      <td>1.0000</td>
+      <td>0.9207</td>
+      <td>0.0793</td>
+      <td>0.0049</td>
+      <td>0.9334</td>
+    </tr>
+  </tbody>
+</table>
+      <div class="grid">
+        <figure><img src="assets/accuracy_compare.png" alt="准确率"><figcaption>测试集准确率对比。</figcaption></figure>
+        <figure><img src="assets/loss_curves_compare.png" alt="loss 曲线"><figcaption>训练型模型 loss 曲线对比，随机森林不适用。</figcaption></figure>
+        <figure><img src="assets/inference_speed_compare.png" alt="推理速度"><figcaption>平均单样本推理延迟对比。</figcaption></figure>
+        <figure><img src="assets/overfit_gap_compare.png" alt="过拟合差距"><figcaption>训练集与测试集准确率差距，用于过拟合分析。</figcaption></figure>
+      </div>
+    </section>
+    <section>
+      <h2>鲁棒性分析</h2>
+      <p>在训练数据中加入两类噪声：数值特征高斯噪声和标签翻转噪声。下表与曲线展示模型随噪声强度增加的测试集精度变化。</p>
+      <table class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>model</th>
+      <th>noise_type</th>
+      <th>strength</th>
+      <th>acc_test</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>RandomForest</td>
+      <td>gaussian_feature</td>
+      <td>0.0000</td>
+      <td>0.9236</td>
+    </tr>
+    <tr>
+      <td>MLP</td>
+      <td>gaussian_feature</td>
+      <td>0.0000</td>
+      <td>0.9266</td>
+    </tr>
+    <tr>
+      <td>XGBoost</td>
+      <td>gaussian_feature</td>
+      <td>0.0000</td>
+      <td>0.9207</td>
+    </tr>
+    <tr>
+      <td>RandomForest</td>
+      <td>gaussian_feature</td>
+      <td>0.0100</td>
+      <td>0.9145</td>
+    </tr>
+    <tr>
+      <td>MLP</td>
+      <td>gaussian_feature</td>
+      <td>0.0100</td>
+      <td>0.9171</td>
+    </tr>
+    <tr>
+      <td>XGBoost</td>
+      <td>gaussian_feature</td>
+      <td>0.0100</td>
+      <td>0.9123</td>
+    </tr>
+    <tr>
+      <td>RandomForest</td>
+      <td>gaussian_feature</td>
+      <td>0.0500</td>
+      <td>0.9043</td>
+    </tr>
+    <tr>
+      <td>MLP</td>
+      <td>gaussian_feature</td>
+      <td>0.0500</td>
+      <td>0.9061</td>
+    </tr>
+    <tr>
+      <td>XGBoost</td>
+      <td>gaussian_feature</td>
+      <td>0.0500</td>
+      <td>0.9046</td>
+    </tr>
+    <tr>
+      <td>RandomForest</td>
+      <td>gaussian_feature</td>
+      <td>0.1000</td>
+      <td>0.9035</td>
+    </tr>
+    <tr>
+      <td>MLP</td>
+      <td>gaussian_feature</td>
+      <td>0.1000</td>
+      <td>0.9017</td>
+    </tr>
+    <tr>
+      <td>XGBoost</td>
+      <td>gaussian_feature</td>
+      <td>0.1000</td>
+      <td>0.9006</td>
+    </tr>
+    <tr>
+      <td>RandomForest</td>
+      <td>label_flip</td>
+      <td>0.0100</td>
+      <td>0.9244</td>
+    </tr>
+    <tr>
+      <td>MLP</td>
+      <td>label_flip</td>
+      <td>0.0100</td>
+      <td>0.9269</td>
+    </tr>
+    <tr>
+      <td>XGBoost</td>
+      <td>label_flip</td>
+      <td>0.0100</td>
+      <td>0.9262</td>
+    </tr>
+    <tr>
+      <td>RandomForest</td>
+      <td>label_flip</td>
+      <td>0.0500</td>
+      <td>0.9218</td>
+    </tr>
+    <tr>
+      <td>MLP</td>
+      <td>label_flip</td>
+      <td>0.0500</td>
+      <td>0.9313</td>
+    </tr>
+    <tr>
+      <td>XGBoost</td>
+      <td>label_flip</td>
+      <td>0.0500</td>
+      <td>0.9240</td>
+    </tr>
+    <tr>
+      <td>RandomForest</td>
+      <td>label_flip</td>
+      <td>0.1000</td>
+      <td>0.9200</td>
+    </tr>
+    <tr>
+      <td>MLP</td>
+      <td>label_flip</td>
+      <td>0.1000</td>
+      <td>0.9291</td>
+    </tr>
+    <tr>
+      <td>XGBoost</td>
+      <td>label_flip</td>
+      <td>0.1000</td>
+      <td>0.9174</td>
+    </tr>
+  </tbody>
+</table>
+      <div class="grid">
+        <figure><img src="assets/robustness_compare.png" alt="鲁棒性"><figcaption>鲁棒性曲线：标签噪声通常比小幅特征噪声更容易破坏泛化性能。</figcaption></figure>
+        <figure><img src="assets/MLP_confusion_matrix.png" alt="MLP 混淆矩阵"><figcaption>MLP 混淆矩阵：观察易混类别。</figcaption></figure>
+      </div>
+    </section>
+    <section>
+      <h2>工程运行方式</h2>
+      <p>统一命令：<code>python -m src.run_experiments --data-dir .. --out experiments/full_run --site-dir docs</code>。算法运行阶段无 UI，所有表格、模型文件、图片和展示页面自动写入工程目录。</p>
+      <h3>补充维度：最大精度下降</h3>
+      <table class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>model</th>
+      <th>noise_type</th>
+      <th>max</th>
+      <th>min</th>
+      <th>drop</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>MLP</td>
+      <td>gaussian_feature</td>
+      <td>0.9266</td>
+      <td>0.9017</td>
+      <td>0.0248</td>
+    </tr>
+    <tr>
+      <td>RandomForest</td>
+      <td>gaussian_feature</td>
+      <td>0.9236</td>
+      <td>0.9035</td>
+      <td>0.0201</td>
+    </tr>
+    <tr>
+      <td>XGBoost</td>
+      <td>gaussian_feature</td>
+      <td>0.9207</td>
+      <td>0.9006</td>
+      <td>0.0201</td>
+    </tr>
+    <tr>
+      <td>XGBoost</td>
+      <td>label_flip</td>
+      <td>0.9262</td>
+      <td>0.9174</td>
+      <td>0.0088</td>
+    </tr>
+    <tr>
+      <td>MLP</td>
+      <td>label_flip</td>
+      <td>0.9313</td>
+      <td>0.9269</td>
+      <td>0.0044</td>
+    </tr>
+    <tr>
+      <td>RandomForest</td>
+      <td>label_flip</td>
+      <td>0.9244</td>
+      <td>0.9200</td>
+      <td>0.0044</td>
+    </tr>
+  </tbody>
+</table>
+    </section>
+  </main>
+</body>
+</html>
